@@ -4,4 +4,4 @@ metadata:
   name: sql-server-configmap
   namespace: default
 data:
-  1433: "default/mssql-service:1433" 
+  1433: "default/mssql-service:1433"
