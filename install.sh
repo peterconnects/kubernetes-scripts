@@ -46,7 +46,7 @@ echo "[kube-install] Installing kubeadm, kubectl and kubelet version 1.15.4"
 apt-get install -y kubectl=1.15.4-00 kubeadm=1.15.4-00 kubelet=1.15.4-00
 
 echo "[kube-install] Running kubeadm"
-kubeadm init --config=kubeadm-config.yaml #--pod-network-cidr=10.244.0.0/16 
+kubeadm init --config=kubeadm-config.yaml #--pod-network-cidr=10.244.0.0/16
 export KUBECONFIG=/etc/kubernetes/admin.conf
 
 echo "[postdeployment] Installing Flannel"
@@ -56,7 +56,7 @@ touch /tmp/installed
 echo "[postdeployment] Arranging access to the cluster for $(logname)\n"
 mkdir -p /home/$(logname)/.kube
 sudo cp /etc/kubernetes/admin.conf /home/$(logname)/.kube/config
-sudo chown $(logname):$(logname) /home/$(logname)/.kube/config
+sudo chown $(logname):$(logname) /home/$(logname)/.kube
 
 echo "[postdeployment] Taint the master so it can host pods"
 kubectl taint nodes --all node-role.kubernetes.io/master-
@@ -83,9 +83,12 @@ until $ROLLOUT_STATUS_CMD || [ $ATTEMPTS -eq 60 ]; do
   ATTEMPTS=$((attempts + 1))
   sleep 10
 done
+
+sudo chown $(logname):$(logname) /home/$(logname)/.helm -R
+
 echo "[postdeployment] Install a customized ingress"
-kubectl apply -f https://raw.githubusercontent.com/kubernetes/ingress-nginx/master/deploy/static/provider/baremetal/service-nodeport.yaml
 kubectl apply -f https://raw.githubusercontent.com/jacqinthebox/kubernetes-scripts/master/ingress-mandatory.yaml
+kubectl apply -f https://raw.githubusercontent.com/kubernetes/ingress-nginx/master/deploy/static/provider/baremetal/service-nodeport.yaml
 
 echo "[postdeployment] Expose port 1433 for Sql"
 kubectl apply -f https://raw.githubusercontent.com/jacqinthebox/kubernetes-scripts/master/sql-server-configmap.yaml
