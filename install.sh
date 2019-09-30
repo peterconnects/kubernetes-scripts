@@ -56,7 +56,7 @@ touch /tmp/installed
 echo "[postdeployment] Arranging access to the cluster for $(logname)\n"
 mkdir -p /home/$(logname)/.kube
 sudo cp /etc/kubernetes/admin.conf /home/$(logname)/.kube/config
-sudo chown $(logname):$(logname) /home/$(logname)/.kube
+sudo chown $(logname):$(logname) /home/$(logname)/.kube -R
 
 echo "[postdeployment] Taint the master so it can host pods"
 kubectl taint nodes --all node-role.kubernetes.io/master-
@@ -125,9 +125,10 @@ DASHBOARDPORT=`kubectl get services --all-namespaces | grep kubernetes-dashboard
 echo ""
 echo " https://your-ip-address:$DASHBOARDPORT"
 echo ""
-echo "[end] If you want to reinitialize the cluster, run" 
+echo "[end] If you want to reinitialize the cluster, run"
 echo ""
-echo " sudo kubeadm reset --force && sudo rm kubeadm-config.yaml && sudo rm /tmp/installed"
+echo " sudo kubeadm reset --force && sudo rm kubeadm-config.yaml helm* install.sh && sudo rm /tmp/installed"
+echo " sudo rm -rf ~/.kube && sudo rm -rf ~/.helm"
 echo ""
 echo "[end] To install autocomplete for kubectl, copy and paste the following in your shell:"
 echo ""
