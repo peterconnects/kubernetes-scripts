@@ -40,19 +40,19 @@ echo "sshd has been restarted"
 
 echo "installing kubernetes"
 echo "running command ./install.sh ${CLUSTER} ${IP_ADDR_NODE01} ${SAN1} ${SAN2}"
-./kubernetes-vagrant-install.sh $CLUSTER $IP_ADDR_NODE01 $SAN1 $SAN2
+./install.sh $CLUSTER $IP_ADDR_NODE01 $SAN1 $SAN2
 
 SCRIPT
 
 Vagrant.configure("2") do |config|
   config.vm.define "node01" do |node01_config|
     node01_config.vm.box = "ubuntu/bionic64"
-    node01_config.vm.hostname = "node01"
+    node01_config.vm.hostname = "kube01"
     node01_config.vm.network "public_network", bridge: BRIDGE_IF, ip: IP_ADDR_NODE01
     node01_config.vm.provider "virtualbox" do |v|
       v.linked_clone = true
       v.memory = 8192
     end
   end
-  #config.vm.provision "shell", inline: $script
+  config.vm.provision "shell", inline: $script
 end
