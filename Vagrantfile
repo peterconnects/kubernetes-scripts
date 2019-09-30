@@ -17,7 +17,7 @@ SAN1="kubelab"
 SAN2="kubelab.localdomain.local"
 
 echo "copy install script"
-wget https://raw.githubusercontent.com/jacqinthebox/vagrant-kubernetes/master/kubernetes-vagrant-install.sh && chmod u=rwx kubernetes-vagrant-install.sh && chown vagrant.vagrant kubernetes-vagrant-install.sh
+wget https://raw.githubusercontent.com/jacqinthebox/kubernetes-scripts/master/install.sh && chmod u=rwx install.sh && chown vagrant.vagrant install.sh
 
 if [ ! -f /tmp/50-vagrant.yaml ]; then
   echo "adding gateway"
@@ -39,7 +39,7 @@ service ssh restart
 echo "sshd has been restarted"
 
 echo "installing kubernetes"
-echo "running command ./kubernetes-vagrant-install.sh ${CLUSTER} ${IP_ADDR_NODE01} ${SAN1} ${SAN2}"
+echo "running command ./install.sh ${CLUSTER} ${IP_ADDR_NODE01} ${SAN1} ${SAN2}"
 ./kubernetes-vagrant-install.sh $CLUSTER $IP_ADDR_NODE01 $SAN1 $SAN2
 
 SCRIPT
