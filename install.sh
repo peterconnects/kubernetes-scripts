@@ -52,7 +52,7 @@ EOF
 echo "[prepare] Turning off swap"
 swapoff -a
 cp /etc/fstab ~/fstab.old
-sed -i '2 d' /etc/fstab
+sed -i '/swapfile/d' /etc/fstab
 
 echo "[prepare] Installing Docker!"
 apt-get update && apt-get install -y apt-transport-https ca-certificates software-properties-common docker.io
