@@ -18,10 +18,35 @@ fi
 
 cat > kubeadm-config.yaml <<EOF
 apiVersion: kubeadm.k8s.io/v1beta2
+kind: InitConfiguration
+localAPIEndpoint:
+  advertiseAddress: $2
+  bindPort: 6443
+---
+apiVersion: kubeadm.k8s.io/v1beta2
 kind: ClusterConfiguration
 clusterName: $1
+kubernetesVersion: "v1.15.4"
 networking:
   podSubnet: 10.244.0.0/16
+apiServer:
+  CertSANs:
+  - "$3"
+  - "$4"
+etcd:
+  local:
+    serverCertSANs:
+      - "$3"
+      - "$4"
+    peerCertSANs:
+      - "$3"
+      - "$4"
+controllerManager:
+  extraArgs:
+    "address": "0.0.0.0"
+scheduler:
+  extraArgs:
+    "address": "0.0.0.0"
 EOF
 
 echo "[prepare] Turning off swap"
