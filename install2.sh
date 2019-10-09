@@ -4,7 +4,7 @@ if [ ! -f /tmp/installed ]; then
 
 if [ -z "$1" ]
 then
-	echo "You forgot the clustername. You should run the script with a variable like so: sudo ./install.sh clustername"
+	echo "You forgot the clustername. You should run the script with a variable like so: sudo ./install.sh clustername ip-adress hostname1 hostname2"
 	echo "Exiting"
 	exit 2
 fi
