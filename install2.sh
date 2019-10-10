@@ -159,7 +159,11 @@ echo "[end] Generating installation report in installation-report.txt"
 
 cd
 now=$(date +"%Y_%m_%d_%I_%M")
+
 cat > installation-report-$now.txt <<EOF
+
+INSTALLATION REPORT
+
 Kubernetes advertiseAddress: $2
 clusterName: $1
 kubernetesVersion: "v1.15.4"
@@ -175,7 +179,10 @@ sudo rm -rf ~/.kube && sudo rm -rf ~/.helm
 To install autocomplete for kubectl, copy and paste the following in your shell:
 source <(kubectl completion bash) 
 echo "\""source <(kubectl completion bash)"\"" >> ~/.bashrc
+
+END OF INSTALLATION REPORT
 EOF
+
 chmod 766 installation-report-$now.txt
 
 
