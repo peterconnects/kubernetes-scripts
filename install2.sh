@@ -190,5 +190,5 @@ To install autocomplete for kubectl, copy and paste the following in your shell:
 source <(kubectl completion bash) 
 echo "\""source <(kubectl completion bash)"\"" >> ~/.bashrc
 EOF
-
+chmod 766 installation-report-$now.txt
 echo "[end] Thank you and see you later."
