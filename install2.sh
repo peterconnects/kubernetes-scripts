@@ -31,6 +31,18 @@ clusterName: $1
 kubernetesVersion: "v1.15.4"
 networking:
   podSubnet: 10.244.0.0/16
+apiServer:
+  CertSANs:
+  - "$1"
+  - "$2"
+etcd:
+  local:
+    serverCertSANs:
+      - "$1"
+      - "$2"
+    peerCertSANs:
+      - "$1"
+      - "$2"
 controllerManager:
   extraArgs:
     "address": "0.0.0.0"
