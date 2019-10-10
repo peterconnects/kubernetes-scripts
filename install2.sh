@@ -158,7 +158,7 @@ echo ""
 echo "[end] Generating installation report in installation-report.txt"
 
 cd
-now=$(date +"%Y_%m_%d_%I_%M_%p")
+now=$(date +"%Y_%m_%d_%I_%M")
 cat > installation-report-$now.txt <<EOF
 Kubernetes advertiseAddress: $2
 clusterName: $1
