@@ -31,18 +31,6 @@ clusterName: $1
 kubernetesVersion: "v1.15.4"
 networking:
   podSubnet: 10.244.0.0/16
-apiServer:
-  CertSANs:
-  - "$3"
-  - "$4"
-etcd:
-  local:
-    serverCertSANs:
-      - "$3"
-      - "$4"
-    peerCertSANs:
-      - "$3"
-      - "$4"
 controllerManager:
   extraArgs:
     "address": "0.0.0.0"
@@ -174,10 +162,6 @@ Kubernetes advertiseAddress: $2
 clusterName: $1
 kubernetesVersion: "v1.15.4"
 podSubnet: 10.244.0.0/16
-apiServer:
-  CertSANs:
-  - "$3"
-  - "$4"
 
 Dashboard Url: https://$2:$DASHBOARDPORT"
 Dashboard Key: $KEY
