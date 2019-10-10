@@ -16,6 +16,8 @@ if [ -f kubeadm-config.yaml  ]; then
     exit 2
 fi
 
+ME=`who | awk '{print $1}'`
+
 cat > kubeadm-config.yaml <<EOF
 apiVersion: kubeadm.k8s.io/v1beta2
 kind: InitConfiguration
@@ -58,6 +60,7 @@ echo "[prepare] Installing Docker!"
 apt-get update && apt-get install -y apt-transport-https ca-certificates software-properties-common docker.io
 systemctl start docker &&  systemctl enable docker
 usermod -aG docker $USER
+usermod -aG docker $ME
 
 echo "[kube-install] Installing Kubernetes"
 apt-get update && apt-get install -y apt-transport-https curl
@@ -78,10 +81,10 @@ echo "[postdeployment] Installing Flannel"
 kubectl apply -f https://raw.githubusercontent.com/coreos/flannel/master/Documentation/kube-flannel.yml
 touch /tmp/installed
 
-echo "[postdeployment] Arranging access to the cluster for $(logname)\n"
-mkdir -p /home/$(logname)/.kube
-sudo cp /etc/kubernetes/admin.conf /home/$(logname)/.kube/config
-sudo chown $(logname):$(logname) /home/$(logname)/.kube -R
+echo "[postdeployment] Arranging access to the cluster for ${ME}\n"
+mkdir -p /home/${ME}/.kube
+cp /etc/kubernetes/admin.conf /home/${ME}/.kube/config
+chown ${ME}:${ME} /home/${ME}/.kube -R
 
 echo "[postdeployment] Taint the master so it can host pods"
 kubectl taint nodes --all node-role.kubernetes.io/master-
@@ -109,7 +112,7 @@ until $ROLLOUT_STATUS_CMD || [ $ATTEMPTS -eq 60 ]; do
   sleep 10
 done
 
-sudo chown $(logname):$(logname) /home/$(logname)/.helm -R
+sudo chown ${ME}:${ME} /home/${ME}/.helm -R
 
 echo "[postdeployment] Install a customized ingress"
 kubectl apply -f https://raw.githubusercontent.com/jacqinthebox/kubernetes-scripts/master/ingress-mandatory.yaml
@@ -134,7 +137,8 @@ fi
 echo "[end] Done. Now fetching the token for the dashboard:"
 echo ""
 
-kubectl get secret $(kubectl get serviceaccount cluster-admin-dashboard-sa -o jsonpath="{.secrets[0].name}") -o jsonpath="{.data.token}" | base64 --decode
+KEY=`kubectl get secret $(kubectl get serviceaccount cluster-admin-dashboard-sa -o jsonpath="{.secrets[0].name}") -o jsonpath="{.data.token}" | base64 --decode`
+echo $KEY
 
 echo ""
 echo ""
@@ -148,7 +152,7 @@ DASHBOARDPORT=`kubectl get services --all-namespaces | grep kubernetes-dashboard
 #IPADDR=`ifconfig enp0s8 | grep mask | awk '{print $2}'`
 
 echo ""
-echo " https://your-ip-address:$DASHBOARDPORT"
+echo " https://$2:$DASHBOARDPORT"
 echo ""
 echo "[end] If you want to reinitialize the cluster, run"
 echo ""
@@ -160,4 +164,31 @@ echo ""
 echo "  source <(kubectl completion bash)" 
 echo "  echo "\""source <(kubectl completion bash)"\"" >> ~/.bashrc"
 echo ""
+echo "[end] Generating installation report in installation-report.txt"
+
+cd
+
+now=$(date +"%Y-%m-%d-%S")
+cat > installation-report-$now.txt <<EOF
+Kubernetes advertiseAddress: $2
+clusterName: $1
+kubernetesVersion: "v1.15.4"
+podSubnet: 10.244.0.0/16
+apiServer:
+  CertSANs:
+  - "$3"
+  - "$4"
+
+Dashboard Url: https://$2:$DASHBOARDPORT"
+Dashboard Key: $KEY
+
+If you want to reinitialize the cluster, run
+sudo kubeadm reset --force && sudo rm -rf kubeadm-config.yaml helm* install.sh && sudo rm -rf /tmp/installed
+sudo rm -rf ~/.kube && sudo rm -rf ~/.helm
+
+To install autocomplete for kubectl, copy and paste the following in your shell:
+source <(kubectl completion bash) 
+echo "\""source <(kubectl completion bash)"\"" >> ~/.bashrc
+EOF
+
 echo "[end] Thank you and see you later."
