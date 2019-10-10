@@ -16,8 +16,6 @@ if [ -f kubeadm-config.yaml  ]; then
     exit 2
 fi
 
-ME=`who | awk '{print $1}'`
-
 cat > kubeadm-config.yaml <<EOF
 apiVersion: kubeadm.k8s.io/v1beta2
 kind: InitConfiguration
@@ -81,11 +79,6 @@ echo "[postdeployment] Installing Flannel"
 kubectl apply -f https://raw.githubusercontent.com/coreos/flannel/master/Documentation/kube-flannel.yml
 touch /tmp/installed
 
-echo "[postdeployment] Arranging access to the cluster for ${ME}\n"
-mkdir -p /home/${ME}/.kube
-cp /etc/kubernetes/admin.conf /home/${ME}/.kube/config
-chown ${ME}:${ME} /home/${ME}/.kube -R
-
 echo "[postdeployment] Taint the master so it can host pods"
 kubectl taint nodes --all node-role.kubernetes.io/master-
 
@@ -111,8 +104,6 @@ until $ROLLOUT_STATUS_CMD || [ $ATTEMPTS -eq 60 ]; do
   ATTEMPTS=$((attempts + 1))
   sleep 10
 done
-
-sudo chown ${ME}:${ME} /home/${ME}/.helm -R
 
 echo "[postdeployment] Install a customized ingress"
 kubectl apply -f https://raw.githubusercontent.com/jacqinthebox/kubernetes-scripts/master/ingress-mandatory.yaml
@@ -186,4 +177,15 @@ source <(kubectl completion bash)
 echo "\""source <(kubectl completion bash)"\"" >> ~/.bashrc
 EOF
 chmod 766 installation-report-$now.txt
-echo "[end] Thank you and see you later."
+
+
+ME=`who | awk '{print $1}'`
+echo "[postdeployment] Arranging access to the cluster for ${ME} and settiung correct permissions on Helm folders.\n"
+mkdir -p /home/${ME}/.kube
+cp /etc/kubernetes/admin.conf /home/${ME}/.kube/config
+chown ${ME}:${ME} /home/${ME}/.kube -R
+sudo chown ${ME}:${ME} /home/${ME}/.helm -R
+
+echo "[end] The script is completed."
+echo "[end] This is the installation report: "
+less installation-report-$now.txt
