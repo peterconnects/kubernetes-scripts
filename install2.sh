@@ -161,7 +161,7 @@ now=$(date +"%Y_%m_%d_%I_%M")
 
 cat > installation-report-$now.txt <<EOF
 
-INSTALLATION REPORT
++++ INSTALLATION REPORT +++
 
 Kubernetes advertiseAddress: $2
 clusterName: $1
@@ -179,7 +179,7 @@ To install autocomplete for kubectl, copy and paste the following in your shell:
 source <(kubectl completion bash) 
 echo "\""source <(kubectl completion bash)"\"" >> ~/.bashrc
 
-END OF INSTALLATION REPORT
++++ END OF INSTALLATION REPORT +++
 EOF
 
 chmod 766 installation-report-$now.txt
