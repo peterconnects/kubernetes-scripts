@@ -58,7 +58,6 @@ echo "[prepare] Installing Docker!"
 apt-get update && apt-get install -y apt-transport-https ca-certificates software-properties-common docker.io
 systemctl start docker &&  systemctl enable docker
 usermod -aG docker $USER
-usermod -aG docker $ME
 
 echo "[kube-install] Installing Kubernetes"
 apt-get update && apt-get install -y apt-transport-https curl
@@ -185,8 +184,10 @@ EOF
 
 chmod 766 installation-report-$now.txt
 
+#This is last because value of variable is reset
 
 ME=`who | awk '{print $1}'`
+usermod -aG docker $ME
 echo "[postdeployment] Arranging access to the cluster for ${ME} and settiung correct permissions on Helm folders.\n"
 mkdir -p /home/${ME}/.kube
 cp /etc/kubernetes/admin.conf /home/${ME}/.kube/config
