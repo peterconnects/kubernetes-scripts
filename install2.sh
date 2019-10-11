@@ -177,7 +177,7 @@ sudo rm -rf ~/.kube && sudo rm -rf ~/.helm
 
 To install autocomplete for kubectl, copy and paste the following in your shell:
 source <(kubectl completion bash) 
-echo "\""source <(kubectl completion bash)"\"" >> ~/.bashrc
+echo "source <(kubectl completion bash)" >> ~/.bashrc
 
 +++ END OF INSTALLATION REPORT +++
 EOF
