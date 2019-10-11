@@ -219,7 +219,7 @@ spec:
             - --udp-services-configmap=$(POD_NAMESPACE)/udp-services
             - --publish-service=$(POD_NAMESPACE)/ingress-nginx
             - --annotations-prefix=nginx.ingress.kubernetes.io
-            - --tcp-services-configmap=default/sql-server-configmap
+            - --tcp-services-configmap=default/mssql-configmap
           securityContext:
             allowPrivilegeEscalation: true
             capabilities:
@@ -264,5 +264,3 @@ spec:
             periodSeconds: 10
             successThreshold: 1
             timeoutSeconds: 10
-
----
