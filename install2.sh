@@ -168,7 +168,7 @@ clusterName: $1
 kubernetesVersion: "v1.15.4"
 podSubnet: 10.244.0.0/16
 
-Dashboard Url: https://$2:$DASHBOARDPORT"
+Dashboard Url: https://$2:$DASHBOARDPORT
 Dashboard Key: $KEY
 
 If you want to reinitialize the cluster, run
