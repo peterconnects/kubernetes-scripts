@@ -15,10 +15,10 @@ sudo rm -rf ~/.kube && sudo rm -rf ~/.helm
 
 What if we want to expose MSSQL over port 1433?
 
-We need to set the hostNetwork to true.
+We need to set the hostNetwork to true, as documented here:  
 https://kubernetes.github.io/ingress-nginx/deploy/baremetal/#via-the-host-network
 
-We need to expose the extra TCP port like so:
+We need to expose the extra TCP port like so:  
 https://kubernetes.github.io/ingress-nginx/user-guide/exposing-tcp-udp-services
 
 The tcp service configmap looks like so:
