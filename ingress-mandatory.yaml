@@ -26,6 +26,8 @@ metadata:
   labels:
     app.kubernetes.io/name: ingress-nginx
     app.kubernetes.io/part-of: ingress-nginx
+  data:
+    1433: "default/mssql-service:1433"
 ---
 kind: ConfigMap
 apiVersion: v1
@@ -81,14 +83,6 @@ rules:
       - list
       - watch
   - apiGroups:
-      - "extensions"
-    resources:
-      - ingresses
-    verbs:
-      - get
-      - list
-      - watch
-  - apiGroups:
       - ""
     resources:
       - events
@@ -97,6 +91,16 @@ rules:
       - patch
   - apiGroups:
       - "extensions"
+      - "networking.k8s.io"
+    resources:
+      - ingresses
+    verbs:
+      - get
+      - list
+      - watch
+  - apiGroups:
+      - "extensions"
+      - "networking.k8s.io"
     resources:
       - ingresses/status
     verbs:
@@ -207,18 +211,22 @@ spec:
         prometheus.io/port: "10254"
         prometheus.io/scrape: "true"
     spec:
+      # wait up to five minutes for the drain of connections
+      terminationGracePeriodSeconds: 300
       serviceAccountName: nginx-ingress-serviceaccount
       hostNetwork: true
+      nodeSelector:
+        kubernetes.io/os: linux
       containers:
         - name: nginx-ingress-controller
-          image: quay.io/kubernetes-ingress-controller/nginx-ingress-controller:0.23.0
+          image: quay.io/kubernetes-ingress-controller/nginx-ingress-controller:0.26.1
           args:
             - /nginx-ingress-controller
             - --configmap=$(POD_NAMESPACE)/nginx-configuration
+            - --tcp-services-configmap=$(POD_NAMESPACE)/tcp-services
             - --udp-services-configmap=$(POD_NAMESPACE)/udp-services
             - --publish-service=$(POD_NAMESPACE)/ingress-nginx
             - --annotations-prefix=nginx.ingress.kubernetes.io
-            - --tcp-services-configmap=default/mssql-configmap
           securityContext:
             allowPrivilegeEscalation: true
             capabilities:
@@ -263,3 +271,10 @@ spec:
             periodSeconds: 10
             successThreshold: 1
             timeoutSeconds: 10
+          lifecycle:
+            preStop:
+              exec:
+                command:
+                  - /wait-shutdown
+
+---

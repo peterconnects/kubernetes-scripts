@@ -106,13 +106,13 @@ done
 
 echo "[postdeployment] Install a customized ingress"
 kubectl apply -f https://raw.githubusercontent.com/jacqinthebox/kubernetes-scripts/master/ingress-mandatory.yaml
-kubectl apply -f https://raw.githubusercontent.com/kubernetes/ingress-nginx/master/deploy/static/provider/baremetal/service-nodeport.yaml
+#kubectl apply -f https://raw.githubusercontent.com/kubernetes/ingress-nginx/master/deploy/static/provider/baremetal/service-nodeport.yaml
 
 #This belongs to the SQL Server deployment.
 #echo "[postdeployment] Expose port 1433 for Sql"
 #kubectl apply -f https://raw.githubusercontent.com/jacqinthebox/kubernetes-scripts/master/mssql-configmap.yaml
 
-#echo "[postdeployment] Install Ingress"
+#echo "[postdeployment] Install Ingress with Helm"
 #helm install stable/nginx-ingress --name v1 --namespace kube-system --set controller.hostNetwork=true --set rbac.create=true --set controller.kind=Deployment --set controller.extraArgs.v=2 --set controller.extraArgs.tcp-services-configmap=default/sql-services
 
 echo "[postdeployment] Set the Kubernetes Dashboard to NodePort"
