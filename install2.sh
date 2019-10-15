@@ -62,9 +62,14 @@ usermod -aG docker $USER
 echo "[kube-install] Installing Kubernetes"
 apt-get update && apt-get install -y apt-transport-https curl
 curl -s https://packages.cloud.google.com/apt/doc/apt-key.gpg | apt-key add -
+
+rm -rf /etc/apt/sources.list.d/kubernetes.list
+rm -rf /etc/apt/sources.list.d/kubernetes.list.save
+
 cat <<EOF >/etc/apt/sources.list.d/kubernetes.list
 deb https://apt.kubernetes.io/ kubernetes-xenial main
 EOF
+
 apt-get update
 #apt-get install -y kubelet  kubeadm kubectl
 echo "[kube-install] Installing kubeadm, kubectl and kubelet version 1.15.4"
@@ -183,8 +188,11 @@ echo "source <(kubectl completion bash)" >> ~/.bashrc
 +++ END OF INSTALLATION REPORT +++
 EOF
 
-chmod 766 installation-report-$now.txt
+# disabling updating Kubernetes
+sed -i -e 's/^/#/g' /etc/apt/sources.list.d/kubernetes.list
+sed -i -e 's/^/#/g' /etc/apt/sources.list.d/kubernetes.list.save
 
+chmod 766 installation-report-$now.txt
 #This is last because value of variable is reset
 
 ME=`who | awk '{print $1}'`
