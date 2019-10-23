@@ -189,13 +189,20 @@ echo "source <(kubectl completion bash)" >> ~/.bashrc
 EOF
 
 # disabling updating Kubernetes
-sed -i -e 's/^/#/g' /etc/apt/sources.list.d/kubernetes.list
-sed -i -e 's/^/#/g' /etc/apt/sources.list.d/kubernetes.list.save
+# disabling updating Kubernetes
+if [ -f /etc/apt/sources.list.d/kubernetes.list ]; then
+  sed -i -e 's/^/#/g' /etc/apt/sources.list.d/kubernetes.list
+fi
+if [ -f /etc/apt/sources.list.d/kubernetes.list.save ]; then
+  sed -i -e 's/^/#/g' /etc/apt/sources.list.d/kubernetes.list.save
+fi
+
 
 chmod 766 installation-report-$now.txt
 #This is last because value of variable is reset
 
-ME=`who | awk '{print $1}'`
+#ME=`who | awk '{print $1}'`
+ME=${SUDO_USER:-$(whoami)}
 usermod -aG docker $ME
 echo "[postdeployment] Arranging access to the cluster for ${ME} and settiung correct permissions on Helm folders.\n"
 mkdir -p /home/${ME}/.kube
