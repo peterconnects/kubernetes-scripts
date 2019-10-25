@@ -5,7 +5,8 @@ This is how to install a Kubernetes cluster on bare metal.
 ```sh
 IP=your-ip-address
 
-wget -O install.sh https://raw.githubusercontent.com/peterconnects/kubernetes-scripts/master/install2.sh && chmod u=rwx install.sh
+wget -O install.sh https://raw.githubusercontent.com/peterconnects/kubernetes-scripts/master/install2.sh 
+chmod u=rwx install.sh
 
 sudo ./install.sh attendant $IP  2>&1 | tee outfile
 ```
