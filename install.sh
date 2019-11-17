@@ -4,7 +4,7 @@ if [ ! -f /tmp/installed ]; then
 
 if [ -z "$1" ]
 then
-	echo "You forgot the clustername. You should run the script with a variable like so: sudo ./install.sh clustername"
+	echo "You forgot the clustername. You should run the script with a variable like so: sudo ./install.sh clustername ip-adress"
 	echo "Exiting"
 	exit 2
 fi
@@ -18,28 +18,58 @@ fi
 
 cat > kubeadm-config.yaml <<EOF
 apiVersion: kubeadm.k8s.io/v1beta2
+kind: InitConfiguration
+localAPIEndpoint:
+  advertiseAddress: $2
+  bindPort: 6443
+---
+apiVersion: kubeadm.k8s.io/v1beta2
 kind: ClusterConfiguration
 clusterName: $1
+kubernetesVersion: "v1.15.4"
 networking:
   podSubnet: 10.244.0.0/16
+apiServer:
+  CertSANs:
+  - "$1"
+  - "$2"
+etcd:
+  local:
+    serverCertSANs:
+      - "$1"
+      - "$2"
+    peerCertSANs:
+      - "$1"
+      - "$2"
+controllerManager:
+  extraArgs:
+    "address": "0.0.0.0"
+scheduler:
+  extraArgs:
+    "address": "0.0.0.0"
 EOF
 
 echo "[prepare] Turning off swap"
 swapoff -a
 cp /etc/fstab ~/fstab.old
-sed -i '2 d' /etc/fstab
+sed -i '/swapfile/d' /etc/fstab
 
 echo "[prepare] Installing Docker!"
-apt-get update && apt-get install -y apt-transport-https ca-certificates software-properties-common docker.io
+apt-get update && apt-get install -y apt-transport-https ca-certificates software-properties-common docker.io openssh-server
 systemctl start docker &&  systemctl enable docker
 usermod -aG docker $USER
 
 echo "[kube-install] Installing Kubernetes"
 apt-get update && apt-get install -y apt-transport-https curl
 curl -s https://packages.cloud.google.com/apt/doc/apt-key.gpg | apt-key add -
+
+rm -rf /etc/apt/sources.list.d/kubernetes.list
+rm -rf /etc/apt/sources.list.d/kubernetes.list.save
+
 cat <<EOF >/etc/apt/sources.list.d/kubernetes.list
 deb https://apt.kubernetes.io/ kubernetes-xenial main
 EOF
+
 apt-get update
 #apt-get install -y kubelet  kubeadm kubectl
 echo "[kube-install] Installing kubeadm, kubectl and kubelet version 1.15.4"
@@ -52,11 +82,6 @@ export KUBECONFIG=/etc/kubernetes/admin.conf
 echo "[postdeployment] Installing Flannel"
 kubectl apply -f https://raw.githubusercontent.com/coreos/flannel/master/Documentation/kube-flannel.yml
 touch /tmp/installed
-
-echo "[postdeployment] Arranging access to the cluster for $(logname)\n"
-mkdir -p /home/$(logname)/.kube
-sudo cp /etc/kubernetes/admin.conf /home/$(logname)/.kube/config
-sudo chown $(logname):$(logname) /home/$(logname)/.kube -R
 
 echo "[postdeployment] Taint the master so it can host pods"
 kubectl taint nodes --all node-role.kubernetes.io/master-
@@ -84,16 +109,15 @@ until $ROLLOUT_STATUS_CMD || [ $ATTEMPTS -eq 60 ]; do
   sleep 10
 done
 
-sudo chown $(logname):$(logname) /home/$(logname)/.helm -R
-
 echo "[postdeployment] Install a customized ingress"
-kubectl apply -f https://raw.githubusercontent.com/jacqinthebox/kubernetes-scripts/master/ingress-mandatory.yaml
-kubectl apply -f https://raw.githubusercontent.com/kubernetes/ingress-nginx/master/deploy/static/provider/baremetal/service-nodeport.yaml
+kubectl apply -f https://raw.githubusercontent.com/peterconnects/kubernetes-scripts/master/ingress-mandatory.yaml
+#kubectl apply -f https://raw.githubusercontent.com/kubernetes/ingress-nginx/master/deploy/static/provider/baremetal/service-nodeport.yaml
 
-echo "[postdeployment] Expose port 1433 for Sql"
-kubectl apply -f https://raw.githubusercontent.com/jacqinthebox/kubernetes-scripts/master/sql-server-configmap.yaml
+#This belongs to the SQL Server deployment.
+#echo "[postdeployment] Expose port 1433 for Sql"
+#kubectl apply -f https://raw.githubusercontent.com/peterconnects/kubernetes-scripts/master/mssql-configmap.yaml
 
-#echo "[postdeployment] Install Ingress"
+#echo "[postdeployment] Install Ingress with Helm"
 #helm install stable/nginx-ingress --name v1 --namespace kube-system --set controller.hostNetwork=true --set rbac.create=true --set controller.kind=Deployment --set controller.extraArgs.v=2 --set controller.extraArgs.tcp-services-configmap=default/sql-services
 
 echo "[postdeployment] Set the Kubernetes Dashboard to NodePort"
@@ -109,7 +133,8 @@ fi
 echo "[end] Done. Now fetching the token for the dashboard:"
 echo ""
 
-kubectl get secret $(kubectl get serviceaccount cluster-admin-dashboard-sa -o jsonpath="{.secrets[0].name}") -o jsonpath="{.data.token}" | base64 --decode
+KEY=`kubectl get secret $(kubectl get serviceaccount cluster-admin-dashboard-sa -o jsonpath="{.secrets[0].name}") -o jsonpath="{.data.token}" | base64 --decode`
+echo $KEY
 
 echo ""
 echo ""
@@ -123,7 +148,7 @@ DASHBOARDPORT=`kubectl get services --all-namespaces | grep kubernetes-dashboard
 #IPADDR=`ifconfig enp0s8 | grep mask | awk '{print $2}'`
 
 echo ""
-echo " https://your-ip-address:$DASHBOARDPORT"
+echo " https://$2:$DASHBOARDPORT"
 echo ""
 echo "[end] If you want to reinitialize the cluster, run"
 echo ""
@@ -135,4 +160,56 @@ echo ""
 echo "  source <(kubectl completion bash)" 
 echo "  echo "\""source <(kubectl completion bash)"\"" >> ~/.bashrc"
 echo ""
-echo "[end] Thank you and see you later."
+echo "[end] Generating installation report in installation-report.txt"
+
+cd
+now=$(date +"%Y_%m_%d_%I_%M")
+
+cat > installation-report-$now.txt <<EOF
+
++++ INSTALLATION REPORT +++
+
+Kubernetes advertiseAddress: $2
+clusterName: $1
+kubernetesVersion: "v1.15.4"
+podSubnet: 10.244.0.0/16
+
+Dashboard Url: https://$2:$DASHBOARDPORT
+Dashboard Key: $KEY
+
+If you want to reinitialize the cluster, run
+sudo kubeadm reset --force && sudo rm -rf kubeadm-config.yaml helm* install.sh && sudo rm -rf /tmp/installed
+sudo rm -rf ~/.kube && sudo rm -rf ~/.helm
+
+To install autocomplete for kubectl, copy and paste the following in your shell:
+source <(kubectl completion bash) 
+echo "source <(kubectl completion bash)" >> ~/.bashrc
+
++++ END OF INSTALLATION REPORT +++
+EOF
+
+# disabling updating Kubernetes
+# disabling updating Kubernetes
+if [ -f /etc/apt/sources.list.d/kubernetes.list ]; then
+  sed -i -e 's/^/#/g' /etc/apt/sources.list.d/kubernetes.list
+fi
+if [ -f /etc/apt/sources.list.d/kubernetes.list.save ]; then
+  sed -i -e 's/^/#/g' /etc/apt/sources.list.d/kubernetes.list.save
+fi
+
+
+chmod 766 installation-report-$now.txt
+#This is last because value of variable is reset
+
+#ME=`who | awk '{print $1}'`
+ME=${SUDO_USER:-$(whoami)}
+usermod -aG docker $ME
+echo "[postdeployment] Arranging access to the cluster for ${ME} and settiung correct permissions on Helm folders.\n"
+mkdir -p /home/${ME}/.kube
+cp /etc/kubernetes/admin.conf /home/${ME}/.kube/config
+chown ${ME}:${ME} /home/${ME}/.kube -R
+sudo chown ${ME}:${ME} /home/${ME}/.helm -R
+
+echo "[end] The script is completed."
+echo "[end] This is the installation report: "
+less installation-report-$now.txt
