@@ -17,7 +17,7 @@ SAN1="kubelab"
 SAN2="kubelab.localdomain.local"
 
 echo "copy install script"
-wget https://raw.githubusercontent.com/jacqinthebox/kubernetes-scripts/master/install.sh && chmod u=rwx install.sh && chown vagrant.vagrant install.sh
+wget https://raw.githubusercontent.com/peterconnects/kubernetes-scripts/master/install.sh && chmod u=rwx install.sh && chown vagrant.vagrant install.sh
 
 if [ ! -f /tmp/50-vagrant.yaml ]; then
   echo "adding gateway"
