@@ -42,6 +42,11 @@ echo "installing kubernetes"
 echo "running command ./install.sh ${CLUSTER} ${IP_ADDR_NODE01} ${SAN1} ${SAN2}"
 ./install.sh $CLUSTER $IP_ADDR_NODE01 $SAN1 $SAN2
 
+# fixing locations and ownership
+cp /root/.kube /root/.helm /root/installation* /home/vagrant/ -a
+chown vagrant.vagrant /home/vagrant/.kube -R
+chown vagrant.vagrant /home/vagrant/.helm -R
+chown vagrant.vagrant /home/vagrant/install*
 SCRIPT
 
 Vagrant.configure("2") do |config|
