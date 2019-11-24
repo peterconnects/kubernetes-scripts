@@ -53,7 +53,7 @@ In Windows `ipconfig /all` will do the trick.
 Then bootstrap the cluster like so:
 
 ```
-vagrant up node01
+vagrant up
 ```
 
 ## What is installed
