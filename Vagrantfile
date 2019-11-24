@@ -140,6 +140,7 @@ Vagrant.configure("2") do |config|
   config.vm.define "node01" do |node01_config|
     node01_config.vm.box = "ubuntu/bionic64"
     node01_config.vm.hostname = "kube01"
+    node01_config.disksize.size = '20GB'
     node01_config.vm.network "public_network", bridge: BRIDGE_IF, ip: IP_ADDR_NODE01
     node01_config.vm.provider "virtualbox" do |v|
       v.linked_clone = true
