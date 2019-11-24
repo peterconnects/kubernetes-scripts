@@ -43,12 +43,12 @@ end
 
 Edit the Vagrantfile. Adjust the variables on top to match your IP config and cluster- and SAN names**:
 
-* to find a free IP address in your subnet, type e.g. nmap -sP 192.168.1.0/24 
-* to find your bridge interface, type net add 
-* to find your Gateway type netstat -rn or ip r
-* to find your DNS type nmcli dev show | grep DNS
+* to find a free IP address in your subnet, type e.g. `nmap -sP 192.168.1.0/24` 
+* to find your bridge interface, type `net add` 
+* to find your Gateway type `netstat -rn` or `ip r`
+* to find your DNS type `nmcli dev show | grep DNS`
 
-In Windows ipconfig /all will do the trick.
+In Windows `ipconfig /all` will do the trick.
 
 Then bootstrap the cluster like so:
 
@@ -62,9 +62,9 @@ vagrant up node01
 
 Kubernetes is installed with the following customizations:
 
-* The Nginx ingress controller will also listen to 1433 (mssql). See the configmap.
-* The ingress controller is set to use hostnetwork is set to true to have it work on a single node bare metal cluster
-* the Dashboard is set to use NodePort to be able to browse to it via its TCP port instead of using kubectl proxy.
+* The ingress controller will also listen to 1433 (mssql). See the configmap.
+* The ingress controller is set to use hostnetwork = true to have it work on a single node bare metal cluster
+* The dashboard is set to use NodePort to be able to browse to it via its TCP port instead of using kubectl proxy.
 
 ### Software and tools
 
@@ -76,7 +76,7 @@ The following packages are installed on top of Ubuntu 18.04.03 LTS:
 * Kubeadm
 * Kubelet
 * Flannel
-* Nginx Ingress
+* Nginx Ingress controller
 * Kubernetes Dashboard
 * Helm
 * Azure CLI
