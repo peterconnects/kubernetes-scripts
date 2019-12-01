@@ -55,7 +55,7 @@ cp /etc/fstab ~/fstab.old
 sed -i '/swapfile/d' /etc/fstab
 
 echo "[prepare] Installing Docker!"
-apt-get update && apt-get install -y apt-transport-https ca-certificates software-properties-common docker.io openssh-server
+apt-get update && apt-get install -y apt-transport-https ca-certificates software-properties-common docker.io openssh-server jq
 systemctl start docker &&  systemctl enable docker
 usermod -aG docker $USER
 
